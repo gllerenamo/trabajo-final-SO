@@ -1,6 +1,6 @@
 # Trabajo Final Sistemas Operativos
 
-# Comandos para compilar
+### Comandos para compilar
 El archivo para el boot solo se necesita compilar una vez.
 ~~~
 nasm -f elf32 -o multiboot.o multiboot.asm
