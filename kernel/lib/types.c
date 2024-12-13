@@ -1,8 +1,8 @@
 #include "types.h"
 
-int len(const char *string) {
+int len(const uint8_t *string) {
     int length = 0;
-    unsigned char c;
-    while ((c = string[length]) != '\n') length++;
+    uint8_t ch;
+    while ((ch = string[length]) != '\n') length++;
     return length;
 }

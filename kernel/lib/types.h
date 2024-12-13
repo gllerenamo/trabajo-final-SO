@@ -41,6 +41,6 @@ typedef struct {
 	int length;
 } string;
 
-int len(const char *string);
+int len(const uint8_t *string);
 
 #endif
