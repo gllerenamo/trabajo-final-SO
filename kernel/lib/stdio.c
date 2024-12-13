@@ -2,8 +2,8 @@
 #include "stdio.h"
 
 void put_char(int pos, unsigned char c) {
-    if (pos < 0 || pos >= 80 * 25) return; // Posicion invalida
-    char *video = (char *)0xb8000;
+    if (pos < 0 || pos >= VGA_WIDTH * VGA_HEIGHT) return; // Posicion invalida
+    char *video = (char *) VGA_MEMORY;
     video[pos*2] = c;
 }
 

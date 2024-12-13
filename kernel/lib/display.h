@@ -1,4 +1,6 @@
 #include "stdio.h"
-void clear(char color);
+#include "types.h"
+
+void clear(Color color);
 void save();
 void init();
