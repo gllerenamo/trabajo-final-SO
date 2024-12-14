@@ -25,6 +25,8 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
+#define BUFFER_SIZE 1024
+
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
@@ -40,6 +42,11 @@ typedef struct {
 	char *text;
 	int length;
 } string;
+
+typedef struct {
+    int posH;
+    int posV;
+} Cursor;
 
 int len(const uint8_t *string);
 
