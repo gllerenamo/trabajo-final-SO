@@ -25,7 +25,7 @@ void put_char(int pos, uint8_t c) {
 void draw_char(int pos) {
     uint8_t *chptr = (uint8_t *) VGA_MEMORY;
     fill(0x0F);
-    chptr[pos*2 + 1] = 0x21;
+    chptr[pos*2 + 1] = 0xF0;
 }
 
 void fill(uint8_t color) {
@@ -51,43 +51,97 @@ void buffer_handler(uint32_t pos, uint8_t ch, uint8_t *buffer) {
         buffer[pos - 1] = 0;
     } else {
         buffer[pos] = ch;
-    }
-}
-
-Cursor key_handler(Cursor position, uint8_t ch, int min, uint8_t *buffer, int allow_backspace) {
-    if (position.posH + position.posV * VGA_WIDTH >= VGA_WIDTH * VGA_HEIGHT && ch != 0x0E) { // Limite de pantalla
-        position.posH = 0;
-        position.posV = 0;
-        return position;
-    }
-    if (ch == 0x0E && position.posH > min) { // Backspace
-        position.posH--;
-        if (allow_backspace) {
-            buffer[position.posH] = 0;
-            put_char(position.posH, ' ');
+        if (pos % VGA_WIDTH == 0) {
+            buffer[pos - 1] = 0;
         }
-    } else if (ch == 0x1C) { // Enter
-        position.posH = 0;
-        position.posV++;
-    } else {
-        put_char(position.posH, en_US[ch]);
-        buffer[position.posH] = ch;
-        position.posH++;
     }
-    buffer_handler(position.posH + position.posV * VGA_WIDTH, ch, buffer);
-    return position;
 }
 
-void input(int length, uint8_t *buffer, int line, int allow_backspace) {
-    Cursor position = {length, line};
-    int index = 0;
+Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_backspace) {
+    int H = position->posH;
+    int V = position->posV;
+    if (en_US[ch] == 0) return *position; //Posible mejora: manejar teclas como shift, ctrl, etc. 
+
+    if (ch == 0x0E) { // Backspace
+        if (H == 1) return *position;
+        position->posH--;
+        buffer[H + V * VGA_WIDTH] = 0;
+        put_char(H + V * VGA_WIDTH, 0);
+    } else if (ch == 0x1C) { // Enter
+        position->posH = 0;
+        position->posV++;
+        // Si se supera el número de líneas (pantalla llena), desplazamos todo hacia arriba
+        // Desplazar el contenido de la pantalla una línea arriba
+        if (V >= VGA_HEIGHT) {
+            move_up();
+            position->posV = VGA_HEIGHT - 1;
+        }
+    } else {
+        if (H >= VGA_WIDTH) {
+            position->posH = 1;
+            position->posV++;
+            if (V >= VGA_HEIGHT) {
+                move_up();
+                position->posV = VGA_HEIGHT - 1;
+            }
+            return *position;
+        }
+        put_char(H + V * VGA_WIDTH, en_US[ch]);
+        buffer[H + V * VGA_WIDTH] = ch;
+        position->posH++;
+    }
+    buffer_handler(H + V * VGA_WIDTH, ch, buffer);
+    return *position;
+}
+
+void move_up() {
+    uint8_t *video = (uint8_t *) VGA_MEMORY;
+    for (int i = 0; i < VGA_HEIGHT - 1; i++) {
+        for (int j = 0; j < VGA_WIDTH; j++) {
+            video[j + i * VGA_WIDTH] = video[j + (i + 1) * VGA_WIDTH];
+        }
+    }
+    
+    for (int i = 0; i < VGA_WIDTH; i++)
+        video[i + (VGA_HEIGHT - 1) * VGA_WIDTH] = 0;
+}
+
+void input(Cursor *position, uint8_t *buffer, int allow_backspace) {
     uint8_t ch = 0;
     while (ch != 0x1C) {
         ch = get_char();
-        position = key_handler(position, ch, 0, buffer, 1);
-        draw_char(position.posH + position.posV * VGA_WIDTH);
-        if (index == BUFFER_SIZE) index--;
-        else index++;
+        *position = key_handler(position, ch, buffer, 1);
+        draw_char(position->posH + position->posV * VGA_WIDTH);
+        //debug(1 + position.posH, position.posV * VGA_WIDTH);
+    }
+}
+
+//Funcion con propositos de debug
+void put_int(int pos, int value) {
+    char buffer[16];
+    int i = 0;
+
+    do {
+        int rem = value % 10;
+        buffer[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+        value = value / 10;
+    } while (value);
+
+    buffer[i] = '\0';
+    int start = 0;
+    int end = i-1;
+    while (start < end) {
+        char temp = buffer[start];
+        buffer[start] = buffer[end];
+        buffer[end] = temp;
+        start++;
+        end--;
     }
 
+    i = 0;
+    while (buffer[i] != '\0') {
+        uint8_t *video = (uint8_t *) VGA_MEMORY;
+        video[(pos + i)*2] = buffer[i];
+        i++;
+    }
 }
