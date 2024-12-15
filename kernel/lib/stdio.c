@@ -41,22 +41,6 @@ void print(const char *str, int lenght, int pos) {
     }
 }
 
-void buffer_handler(uint32_t pos, uint8_t ch, uint8_t *buffer) {
-    if (pos == BUFFER_SIZE) {
-        for (int i = 0; i < BUFFER_SIZE - 1; i++) {
-            buffer[i] = buffer[i + 1];
-        }
-        buffer[BUFFER_SIZE - 1] = ch;
-    } else if (ch == 0x0E) {
-        buffer[pos - 1] = 0;
-    } else {
-        buffer[pos] = ch;
-        if (pos % VGA_WIDTH == 0) {
-            buffer[pos - 1] = 0;
-        }
-    }
-}
-
 Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_backspace) {
     int H = position->posH;
     int V = position->posV;
@@ -64,46 +48,48 @@ Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_back
 
     if (ch == 0x0E) { // Backspace
         if (H == 1) return *position;
-        position->posH--;
+        H = --position->posH;
         buffer[H + V * VGA_WIDTH] = 0;
         put_char(H + V * VGA_WIDTH, 0);
     } else if (ch == 0x1C) { // Enter
         position->posH = 0;
-        position->posV++;
+        V = ++position->posV;
+
         // Si se supera el número de líneas (pantalla llena), desplazamos todo hacia arriba
         // Desplazar el contenido de la pantalla una línea arriba
         if (V >= VGA_HEIGHT) {
-            move_up();
+            move_up(buffer);
             position->posV = VGA_HEIGHT - 1;
         }
     } else {
         if (H >= VGA_WIDTH) {
             position->posH = 1;
-            position->posV++;
+            V = ++position->posV;
             if (V >= VGA_HEIGHT) {
-                move_up();
+                move_up(buffer);
                 position->posV = VGA_HEIGHT - 1;
             }
             return *position;
         }
         put_char(H + V * VGA_WIDTH, en_US[ch]);
-        buffer[H + V * VGA_WIDTH] = ch;
+        buffer[H + V * VGA_WIDTH] = en_US[ch];
         position->posH++;
     }
-    buffer_handler(H + V * VGA_WIDTH, ch, buffer);
     return *position;
 }
 
-void move_up() {
-    uint8_t *video = (uint8_t *) VGA_MEMORY;
-    for (int i = 0; i < VGA_HEIGHT - 1; i++) {
-        for (int j = 0; j < VGA_WIDTH; j++) {
-            video[j + i * VGA_WIDTH] = video[j + (i + 1) * VGA_WIDTH];
+void move_up(uint8_t *buffer) {
+    for (int row = 1; row < VGA_HEIGHT; row++) {
+        for (int col = 0; col < VGA_WIDTH; col++) {
+            buffer[col + (row - 1) * VGA_WIDTH] = buffer[col + row * VGA_WIDTH];
+            put_char(col + (row - 1) * VGA_WIDTH, buffer[col + row * VGA_WIDTH]);
         }
     }
     
-    for (int i = 0; i < VGA_WIDTH; i++)
-        video[i + (VGA_HEIGHT - 1) * VGA_WIDTH] = 0;
+    for (int i = 0; i < VGA_WIDTH; i++) {
+        buffer[i + (VGA_HEIGHT - 1) * VGA_WIDTH] = 0;
+        put_char(i + (VGA_HEIGHT - 1) * VGA_WIDTH, 0);
+    }
 }
 
 void input(Cursor *position, uint8_t *buffer, int allow_backspace) {
@@ -112,7 +98,6 @@ void input(Cursor *position, uint8_t *buffer, int allow_backspace) {
         ch = get_char();
         *position = key_handler(position, ch, buffer, 1);
         draw_char(position->posH + position->posV * VGA_WIDTH);
-        //debug(1 + position.posH, position.posV * VGA_WIDTH);
     }
 }
 

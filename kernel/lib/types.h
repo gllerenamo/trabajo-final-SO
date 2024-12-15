@@ -25,7 +25,7 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 80*25
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
