@@ -1,8 +1,10 @@
+#ifndef PROCESS_MANAGER_H
+#define PROCESS_MANAGER_H
+
 #include "types.h"
 
-#define MAX_PROCESSES 4 // Valor inicial para pruebas
+#define MAX_PROCESSES 4
 
-// Variables para estados de proceso y Process Control Block (PCB)
 typedef enum {
     PROCESS_NEW,
     PROCESS_READY,
@@ -16,13 +18,13 @@ typedef struct {
     process_state_t state;
     uint32_t program_counter;
     uint32_t *stack_pointer;
-    uint32_t registers[8]; // Estados de registro (eax, ebx, ecx, etc)
+    uint32_t registers[8];
 } PCB;
 
-PCB processes[MAX_PROCESSES];
+extern PCB processes[MAX_PROCESSES];
+extern uint32_t current_pid;
 
 void init_process_manager();
-void switch_process(int pid);
+void switch_process();
 
-uint32_t get_current_pc();
-void set_program_counter(uint32_t new_pc);
+#endif
