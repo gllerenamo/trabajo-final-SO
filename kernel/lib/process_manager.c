@@ -42,7 +42,7 @@ uint32_t get_current_program_counter() {
 void set_program_counter(uint32_t new_pc) {
     __asm__ __volatile__(
         "jmp *%0\n"  
-        : // Sin salidas
+        : // Sin salibidas
         : "r"(new_pc)
     );
 }

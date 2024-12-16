@@ -1,4 +1,4 @@
-// concurrency_scheduler.c
+/* // concurrency_scheduler.c
 #include "process_manager.h"
 #include "timer.h"
 #include "display.h"
@@ -113,4 +113,4 @@ void process_3() {
         for (volatile int i = 0; i < 1000000; i++);
         semaphore_signal(&shared_resource_semaphore);
     }
-}
+} */

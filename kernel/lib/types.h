@@ -49,5 +49,6 @@ typedef struct {
 } Cursor;
 
 int len(const uint8_t *string);
+int strcmp(string *str1, string *str2);
 
 #endif
