@@ -3,7 +3,8 @@
 
 #include "display.h"
 
-void process_command(uint8_t *buffer, Cursor *cursor);
+void init_shell();  
+void process_command(Cursor *cursor);
 void shell();
 
 #endif

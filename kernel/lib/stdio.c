@@ -2,6 +2,14 @@
 #include "stdio.h"
 #include "keyboard.h"
 
+uint8_t shellbuffer[BUFFER_SIZE] = {0};
+
+void init_buffer() {
+    for (int i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++) {
+        shellbuffer[i] = 0;
+    }
+}
+
 uint8_t get_char() {
     uint8_t ch;
 
@@ -38,10 +46,11 @@ void fill(uint8_t color) {
 void print(const char *str, int lenght, int pos) {
     for (int i = 0; i < lenght; i++) {
         put_char(pos + i, str[i]);
+        shellbuffer[pos + i] = str[i];
     }
 }
 
-Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_backspace) {
+Cursor key_handler(Cursor *position, uint8_t ch, int allow_backspace) {
     int H = position->posH;
     int V = position->posV;
     if (en_US[ch] == 0) return *position; //Posible mejora: manejar teclas como shift, ctrl, etc. 
@@ -49,7 +58,7 @@ Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_back
     if (ch == 0x0E) { // Backspace
         if (H == 1) return *position;
         H = --position->posH;
-        buffer[H + V * VGA_WIDTH] = 0;
+        shellbuffer[H + V * VGA_WIDTH] = 0;
         put_char(H + V * VGA_WIDTH, 0);
     } else if (ch == 0x1C) { // Enter
         position->posH = 0;
@@ -58,7 +67,7 @@ Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_back
         // Si se supera el número de líneas (pantalla llena), desplazamos todo hacia arriba
         // Desplazar el contenido de la pantalla una línea arriba
         if (V >= VGA_HEIGHT) {
-            move_up(buffer);
+            move_up(shellbuffer);
             position->posV = VGA_HEIGHT - 1;
         }
     } else {
@@ -66,37 +75,37 @@ Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_back
             position->posH = 1;
             V = ++position->posV;
             if (V >= VGA_HEIGHT) {
-                move_up(buffer);
+                move_up(shellbuffer);
                 position->posV = VGA_HEIGHT - 1;
             }
             return *position;
         }
         put_char(H + V * VGA_WIDTH, en_US[ch]);
-        buffer[H + V * VGA_WIDTH] = en_US[ch];
+        shellbuffer[H + V * VGA_WIDTH] = en_US[ch];
         position->posH++;
     }
     return *position;
 }
 
-void move_up(uint8_t *buffer) {
+void move_up() {
     for (int row = 1; row < VGA_HEIGHT; row++) {
         for (int col = 0; col < VGA_WIDTH; col++) {
-            buffer[col + (row - 1) * VGA_WIDTH] = buffer[col + row * VGA_WIDTH];
-            put_char(col + (row - 1) * VGA_WIDTH, buffer[col + row * VGA_WIDTH]);
+            shellbuffer[col + (row - 1) * VGA_WIDTH] = shellbuffer[col + row * VGA_WIDTH];
+            put_char(col + (row - 1) * VGA_WIDTH, shellbuffer[col + row * VGA_WIDTH]);
         }
     }
     
     for (int i = 0; i < VGA_WIDTH; i++) {
-        buffer[i + (VGA_HEIGHT - 1) * VGA_WIDTH] = 0;
+        shellbuffer[i + (VGA_HEIGHT - 1) * VGA_WIDTH] = 0;
         put_char(i + (VGA_HEIGHT - 1) * VGA_WIDTH, 0);
     }
 }
 
-void input(Cursor *position, uint8_t *buffer, int allow_backspace) {
+void input(Cursor *position, int allow_backspace) {
     uint8_t ch = 0;
     while (ch != 0x1C) {
         ch = get_char();
-        *position = key_handler(position, ch, buffer, 1);
+        *position = key_handler(position, ch, 1);
         draw_char(position->posH + position->posV * VGA_WIDTH);
     }
 }
