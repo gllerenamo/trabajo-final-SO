@@ -5,7 +5,6 @@ void put_char(int pos, uint8_t c);
 void draw_char(int pos);
 void fill(uint8_t color);
 void print(const char *str, int lenght, int pos);
-void buffer_handler(uint32_t pos, uint8_t ch, uint8_t *buffer);
 Cursor key_handler(Cursor *position, uint8_t ch, uint8_t *buffer, int allow_backspace);
-void move_up();
+void move_up(uint8_t *buffer);
 void input(Cursor* position, uint8_t *buffer, int allow_backspace);
