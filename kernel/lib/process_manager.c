@@ -1,6 +1,8 @@
 #include "process_manager.h"
 
 uint32_t current_pid = 0;
+PCB processes[MAX_PROCESSES];
+uint32_t current_pid;
 
 void init_process_manager() {
     for (int i = 0; i < MAX_PROCESSES; i++) {
