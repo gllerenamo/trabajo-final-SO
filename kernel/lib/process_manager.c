@@ -28,7 +28,7 @@ void switch_process(int pid) {
     current_pid = pid;
 }
 
-uint32_t get_current_program_counter() {
+uint32_t get_current_pc() {
     uint32_t pc;
     // En 32 bits, el registro EIP contiene la dirección de la siguiente instrucción a ejecutar
     // EIP: Extended Instruction Pointer
@@ -48,5 +48,3 @@ void set_program_counter(uint32_t new_pc) {
         : "r"(new_pc)
     );
 }
-
-

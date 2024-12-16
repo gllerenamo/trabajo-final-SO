@@ -21,7 +21,9 @@ void init_scheduler() {
 //robin
 void schedule_next() {
     if (num_ready_processes == 0) {
-        print("No hay procesos listos.\n", 20, 0);
+        cursor.posH = 0;
+        cursor.posV = 0;
+        print("No hay procesos listos.\n", 20);
         return;
     }
 

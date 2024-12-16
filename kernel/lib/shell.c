@@ -25,8 +25,8 @@ void init_shell() {
     clear(c);
 }
 
-void process_command(Cursor *cursor) {
-    int pos = 1 + (cursor->posV - 1) * VGA_WIDTH;
+void process_command() {
+    int pos = 1 + (cursor.posV - 1) * VGA_WIDTH;
     char line_ch[VGA_WIDTH] = {0};
     string line = {line_ch, 0};
 
@@ -40,19 +40,17 @@ void process_command(Cursor *cursor) {
     if (strcmp(&line, &commands[0])) {
         Color c = {BLACK, BLUE};
         clear(c);
-        cursor->posH = 0;
-        cursor->posV = 0;
-        print("clear ejecutado. Enter para continuar", 37, 0);
+        cursor.posH = 0;
+        cursor.posV = 0;
+        print("clear ejecutado. Enter para continuar", 37);
         init_shell();
     } else {
-        print("Comando no encontrado", 21, cursor->posH + cursor->posV * VGA_WIDTH);
-        cursor->posV++;
+        print("Comando no encontrado", 21);
+        cursor.posV++;
     }
 }
 
 void shell() {
-    Cursor cursor = {0, 0};
-
     //Desactivar cursor
     outb(0x3D4, 0x0A);
     outb(0x3D5, 0x20);
@@ -63,7 +61,7 @@ void shell() {
         put_char(cursor.posH + cursor.posV * VGA_WIDTH, '$');
         shellbuffer[cursor.posH + cursor.posV * VGA_WIDTH] = '$';
         cursor.posH++;
-        input(&cursor, 1);
+        input(1);
 
         process_command(&cursor);
 

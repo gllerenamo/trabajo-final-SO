@@ -4,7 +4,7 @@
 #include "display.h"
 
 void init_shell();  
-void process_command(Cursor *cursor);
+void process_command();
 void shell();
 
 #endif
