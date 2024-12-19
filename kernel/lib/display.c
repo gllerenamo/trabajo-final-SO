@@ -20,7 +20,7 @@ void save() {
     }
 }
 
-void init() {
+void init_display() {
     Color color = {BLACK, BLUE};
     clear(color);
     save();

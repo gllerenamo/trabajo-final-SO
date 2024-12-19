@@ -2,7 +2,6 @@
 #include "timer.h"
 #include "stdio.h"
 
-extern PCB processes[MAX_PROCESSES]; 
 extern uint32_t current_pid;         
 
 static int ready_queue[MAX_PROCESSES]; 
@@ -11,9 +10,14 @@ static int queue_tail = 0;
 static int num_ready_processes = 0;    
 
 void init_scheduler() {
+    set_process_state(current_pid, PROCESS_RUNNING);
+    set_program_counter(get_current_pc());
+
+    asm volatile("mov %0, %%esp" : : "r"(get_process(current_pid).stack_pointer));
+
     for (int i = 0; i < MAX_PROCESSES; i++) {
-        if (processes[i].state == PROCESS_READY) {
-            ready_queue[queue_tail++] = processes[i].pid; 
+        if (get_process(i).state == PROCESS_READY) {
+            ready_queue[queue_tail++] = get_process(i).pid; 
             num_ready_processes++;
         }
     }
@@ -30,9 +34,8 @@ void schedule_next() {
     int next_pid = ready_queue[queue_head];
     queue_head = (queue_head + 1) % MAX_PROCESSES;
 
-    processes[current_pid].state = PROCESS_READY;
-
-    processes[next_pid].state = PROCESS_RUNNING;
+    set_process_state(get_current_pc(), PROCESS_READY);
+    set_process_state(next_pid, PROCESS_RUNNING);
 
     switch_process(next_pid);
     current_pid = next_pid;

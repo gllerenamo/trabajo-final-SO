@@ -4,11 +4,6 @@ string commands[1] = {
     {"clear", 5},
 };
 
-// Funciones auxiliares
-void outb(uint16_t port, uint8_t val) {
-    __asm__ __volatile__ ("outb %0, %1" : : "a"(val), "Nd"(port));
-}
-
 void init_shell() {
     //Esperar a que se presione enter
     uint8_t ch;
@@ -23,6 +18,13 @@ void init_shell() {
     //Limpiar pantalla
     Color c = {BLACK, BLUE};
     clear(c);
+}
+
+void keyboard_handler(uint8_t number) {
+    print("Keyboard interrupt", 17);
+    uint8_t ch = inb(0x60);
+    keyboard_interrupt_handler(ch);
+    outb(0x20, 0x20); // Enviar EOI al PIC
 }
 
 void process_command() {
@@ -55,6 +57,8 @@ void shell() {
     outb(0x3D4, 0x0A);
     outb(0x3D5, 0x20);
 
+    register_interrupt_handler(33, keyboard_handler);
+    
     init_shell();
 
     while (1) {

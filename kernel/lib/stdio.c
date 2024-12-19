@@ -1,6 +1,5 @@
 //Archivo para I/O consola
 #include "stdio.h"
-#include "keyboard.h"
 
 uint8_t shellbuffer[BUFFER_SIZE] = {0};
 Cursor cursor = {0, 0};
@@ -8,20 +7,6 @@ Cursor cursor = {0, 0};
 void init_buffer() {
     for (int i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++) {
         shellbuffer[i] = 0;
-    }
-}
-
-uint8_t get_char() {
-    uint8_t ch;
-
-    while (1) {
-        uint8_t status;
-        asm volatile("inb $0x64, %0" : "=a"(status));
-        if (status & 0x1) { // Bit de estado 0 indica que hay un byte en el buffer
-            asm volatile("inb $0x60, %0" : "=a"(ch));
-            if (ch & 0x80) continue; // Tecla liberada, no se devuelve nada
-            return ch; // Tecla presionada, se devuelve valor de la tecla
-        }
     }
 }
 

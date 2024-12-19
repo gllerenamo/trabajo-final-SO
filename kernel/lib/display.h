@@ -3,4 +3,4 @@
 
 void clear(Color color);
 void save();
-void init();
+void init_display();

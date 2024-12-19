@@ -27,6 +27,8 @@
 
 #define BUFFER_SIZE 80*25
 
+#define STACK_SIZE 1024
+
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;

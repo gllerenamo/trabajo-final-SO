@@ -1,10 +1,10 @@
-#include "types.h"
+#include "keyboard.h"
+#include "interrupts.h"
 
 extern uint8_t shellbuffer[BUFFER_SIZE];
 extern Cursor cursor;
 
 void init_buffer();
-uint8_t get_char();
 void put_int(int pos, int value);
 void put_char(int pos, uint8_t c);
 void draw_char(int pos);
